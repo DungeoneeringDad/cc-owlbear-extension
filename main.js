@@ -1,6 +1,6 @@
 import OBR from "https://unpkg.com/@owlbear-rodeo/sdk@latest/dist/index.mjs";
 
-const EXT_ID = "io.dungeoneeringdad.cc-sheet";
+const EXT_ID = "io.dungeoneeringdad.cc-shadowdark-style";
 const ROOM_KEY = `${EXT_ID}/partyRecords`;
 const SLOT_PREFIX = `${EXT_ID}/slot/`;
 const ATTRS = ["str","dex","con","int","wis","cha"];
@@ -14,7 +14,7 @@ OBR.onReady(async () => {
   buildAttributes();
   buildSpellSlots();
   bindEvents();
-  await loadActiveSlot();
+  await loadSlot();
   await loadRoomRecords();
 });
 
@@ -31,20 +31,7 @@ function initTabs() {
 
 function bindEvents() {
   document.addEventListener("input", (e) => {
-    if (!e.target || !e.target.id) return;
-    if (ATTRS.includes(e.target.id)) updateModifier(e.target.id);
-    if (document.getElementById("autoSave").checked) {
-      saveActiveSlot();
-    }
-  });
-
-  document.addEventListener("change", () => {
-    if (document.getElementById("autoSave").checked) {
-      saveActiveSlot();
-    }
-    if (document.getElementById("showMods")) {
-      refreshModifierVisibility();
-    }
+    if (e.target?.id && ATTRS.includes(e.target.id)) updateModifier(e.target.id);
   });
 
   document.addEventListener("click", (e) => {
@@ -56,9 +43,9 @@ function bindEvents() {
 
   document.getElementById("attackBtn").addEventListener("click", doAttack);
   document.getElementById("initiativeBtn").addEventListener("click", doInitiative);
-  document.getElementById("saveSlotBtn").addEventListener("click", saveActiveSlot);
-  document.getElementById("loadSlotBtn").addEventListener("click", loadActiveSlot);
-  document.getElementById("shareRoomBtn").addEventListener("click", shareToRoom);
+  document.getElementById("saveBtn").addEventListener("click", saveSlot);
+  document.getElementById("loadBtn").addEventListener("click", loadSlot);
+  document.getElementById("shareBtn").addEventListener("click", shareToRoom);
   document.getElementById("loadRoomBtn").addEventListener("click", loadRoomRecords);
   document.getElementById("exportBtn").addEventListener("click", exportJson);
   document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFile").click());
@@ -70,9 +57,9 @@ function buildAttributes() {
   root.innerHTML = "";
   ATTRS.forEach(attr => {
     const card = document.createElement("div");
-    card.className = "attr-card";
+    card.className = "stat-card";
     card.innerHTML = `
-      <div class="attr-head">
+      <div class="stat-head">
         <strong>${LABELS[attr]}</strong>
         <span class="mod" id="${attr}Mod">+0</span>
       </div>
@@ -84,7 +71,6 @@ function buildAttributes() {
     root.appendChild(card);
   });
   ATTRS.forEach(updateModifier);
-  refreshModifierVisibility();
 }
 
 function buildSpellSlots() {
@@ -118,13 +104,6 @@ function updateModifier(attr) {
   document.getElementById(attr + "Mod").textContent = mod >= 0 ? `+${mod}` : String(mod);
 }
 
-function refreshModifierVisibility() {
-  const show = document.getElementById("showMods").checked;
-  document.querySelectorAll(".mod").forEach(el => {
-    el.style.visibility = show ? "visible" : "hidden";
-  });
-}
-
 function rollDie(sides) {
   return Math.floor(Math.random() * sides) + 1;
 }
@@ -147,13 +126,13 @@ function renderLog() {
 
 function doAttack() {
   const roll = rollDie(20);
-  const bth = Number(document.getElementById("bth").value || 0);
+  const bth = Number(val("bth") || 0);
   addLog("Attack", `d20 ${roll} + BTH ${bth} = ${roll + bth}`);
 }
 
 function doInitiative() {
   const roll = rollDie(10);
-  const bonus = Number(document.getElementById("initBonus").value || 0);
+  const bonus = Number(val("initBonus") || 0);
   addLog("Initiative", `d10 ${roll} + bonus ${bonus} = ${roll + bonus}`);
 }
 
@@ -163,8 +142,8 @@ function rollDamage(code) {
 }
 
 function doSiege(attr) {
-  const score = Number(document.getElementById(attr).value || 10);
-  const cl = Number(document.getElementById(attr + "CL").value || 0);
+  const score = Number(val(attr) || 10);
+  const cl = Number(val(attr + "CL") || 0);
   const prime = document.getElementById(attr + "Prime").checked;
   const base = prime ? 12 : 18;
   const roll = rollDie(20);
@@ -174,12 +153,12 @@ function doSiege(attr) {
   addLog(`${LABELS[attr]} Siege`, `d20 ${roll} + mod ${mod} = ${total} vs ${target}`);
 }
 
-function getSelectedSlot() {
+function selectedSlot() {
   return document.getElementById("slotSelect").value;
 }
 
-function getSlotKey() {
-  return `${SLOT_PREFIX}${getSelectedSlot()}`;
+function slotKey() {
+  return `${SLOT_PREFIX}${selectedSlot()}`;
 }
 
 function collectData() {
@@ -198,19 +177,19 @@ function collectData() {
     bth: val("bth"),
     initBonus: val("initBonus"),
     move: val("move"),
-    abilities: val("abilities"),
+    notes: val("notes"),
+    weapons: val("weapons"),
+    armor: val("armor"),
     equipment: val("equipment"),
     treasure: val("treasure"),
-    notes: val("notes"),
+    languages: val("languages"),
     spellNotes: val("spellNotes"),
-    options: {
-      autoSave: document.getElementById("autoSave").checked,
-      showMods: document.getElementById("showMods").checked
-    },
+    abilities: val("abilities"),
+    training: val("training"),
+    companions: val("companions"),
     attrs: {},
     spellSlots: {}
   };
-
   ATTRS.forEach(attr => {
     data.attrs[attr] = {
       score: val(attr),
@@ -218,68 +197,38 @@ function collectData() {
       prime: document.getElementById(attr + "Prime").checked
     };
   });
-
   document.querySelectorAll(".slot").forEach(slot => {
-    const key = `${slot.dataset.level}:${slot.dataset.index}`;
-    data.spellSlots[key] = slot.checked;
+    data.spellSlots[`${slot.dataset.level}:${slot.dataset.index}`] = slot.checked;
   });
-
   return data;
 }
 
 function applyData(data) {
   if (!data) return;
-  setVal("name", data.name);
-  setVal("charClass", data.charClass);
-  setVal("race", data.race);
-  setVal("level", data.level);
-  setVal("alignment", data.alignment);
-  setVal("player", data.player);
-  setVal("deity", data.deity);
-  setVal("xp", data.xp);
-  setVal("hp", data.hp);
-  setVal("maxHp", data.maxHp);
-  setVal("ac", data.ac);
-  setVal("bth", data.bth);
-  setVal("initBonus", data.initBonus);
-  setVal("move", data.move);
-  setVal("abilities", data.abilities);
-  setVal("equipment", data.equipment);
-  setVal("treasure", data.treasure);
-  setVal("notes", data.notes);
-  setVal("spellNotes", data.spellNotes);
-
-  if (data.options) {
-    document.getElementById("autoSave").checked = Boolean(data.options.autoSave);
-    document.getElementById("showMods").checked = Boolean(data.options.showMods);
-  }
-
+  ["name","charClass","race","level","alignment","player","deity","xp","hp","maxHp","ac","bth","initBonus","move","notes","weapons","armor","equipment","treasure","languages","spellNotes","abilities","training","companions"]
+    .forEach(id => setVal(id, data[id]));
   ATTRS.forEach(attr => {
-    const value = data.attrs?.[attr] || {};
-    setVal(attr, value.score ?? 10);
-    setVal(attr + "CL", value.cl ?? 0);
-    document.getElementById(attr + "Prime").checked = Boolean(value.prime);
+    const v = data.attrs?.[attr] || {};
+    setVal(attr, v.score ?? 10);
+    setVal(attr + "CL", v.cl ?? 0);
+    document.getElementById(attr + "Prime").checked = Boolean(v.prime);
     updateModifier(attr);
   });
-
   document.querySelectorAll(".slot").forEach(slot => {
-    const key = `${slot.dataset.level}:${slot.dataset.index}`;
-    slot.checked = Boolean(data.spellSlots?.[key]);
+    slot.checked = Boolean(data.spellSlots?.[`${slot.dataset.level}:${slot.dataset.index}`]);
   });
-
-  refreshModifierVisibility();
 }
 
-async function saveActiveSlot() {
-  localStorage.setItem(getSlotKey(), JSON.stringify(collectData()));
-  addLog("Save", `Saved slot ${getSelectedSlot()}`);
+async function saveSlot() {
+  localStorage.setItem(slotKey(), JSON.stringify(collectData()));
+  addLog("Save", `Saved slot ${selectedSlot()}`);
 }
 
-async function loadActiveSlot() {
-  const raw = localStorage.getItem(getSlotKey());
+async function loadSlot() {
+  const raw = localStorage.getItem(slotKey());
   if (!raw) return;
   applyData(JSON.parse(raw));
-  addLog("Load", `Loaded slot ${getSelectedSlot()}`);
+  addLog("Load", `Loaded slot ${selectedSlot()}`);
 }
 
 async function shareToRoom() {
@@ -288,11 +237,10 @@ async function shareToRoom() {
     const meta = await OBR.room.getMetadata();
     const existing = Array.isArray(meta?.[ROOM_KEY]) ? meta[ROOM_KEY] : [];
     const withoutSameName = existing.filter(x => (x.name || "").trim() !== (current.name || "").trim());
-    const next = [...withoutSameName, current];
-    await OBR.room.setMetadata({ [ROOM_KEY]: next });
+    await OBR.room.setMetadata({ [ROOM_KEY]: [...withoutSameName, current] });
     addLog("Room Share", "Shared current character to room records.");
     await loadRoomRecords();
-  } catch (err) {
+  } catch {
     addLog("Room Share", "Unable to share to room.");
   }
 }
@@ -301,7 +249,7 @@ async function loadRoomRecords() {
   try {
     const meta = await OBR.room.getMetadata();
     renderParty(Array.isArray(meta?.[ROOM_KEY]) ? meta[ROOM_KEY] : []);
-  } catch (err) {
+  } catch {
     renderParty([]);
     addLog("Room Records", "Unable to load room records.");
   }
@@ -310,7 +258,7 @@ async function loadRoomRecords() {
 function renderParty(records) {
   const root = document.getElementById("partyList");
   if (!records.length) {
-    root.innerHTML = `<div class="party-card"><h3>No shared records yet</h3><div class="party-meta">Use “Share to Room” from a character sheet.</div></div>`;
+    root.innerHTML = `<div class="party-card"><h3>No shared records yet</h3><div class="party-meta">Use Share to Room from a character sheet.</div></div>`;
     return;
   }
   root.innerHTML = records.map((record, idx) => `
@@ -321,7 +269,6 @@ function renderParty(records) {
       <div style="margin-top:10px"><button data-party-index="${idx}">Load to Sheet</button></div>
     </div>
   `).join("");
-
   root.querySelectorAll("[data-party-index]").forEach(btn => {
     btn.addEventListener("click", async () => {
       const meta = await OBR.room.getMetadata();
@@ -348,8 +295,7 @@ function exportJson() {
 async function importJson(event) {
   const file = event.target.files?.[0];
   if (!file) return;
-  const data = JSON.parse(await file.text());
-  applyData(data);
+  applyData(JSON.parse(await file.text()));
   addLog("Import", `Imported ${file.name}`);
   event.target.value = "";
 }

@@ -3,53 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>C&C Character Sheet</title>
+  <title>C&C Sheet</title>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <div>
-        <h1>Castles & Crusades Character Sheet</h1>
-        <p class="subtitle">A C&C sheet inspired by the multi-tab Shadowdark-style Owlbear layout.</p>
+        <h1>Castles & Crusades</h1>
+        <p class="subtitle">Shadowdark-style tabbed character sheet layout for Owlbear Rodeo</p>
       </div>
-      <div class="topbar-actions">
-        <button id="saveSlotBtn" class="primary">Save Slot</button>
-        <button id="loadSlotBtn">Load Slot</button>
-        <button id="shareRoomBtn">Share to Room</button>
-        <button id="loadRoomBtn">Load Room Records</button>
-        <button id="exportBtn">Export JSON</button>
-        <button id="importBtn">Import JSON</button>
+      <div class="toolbar">
+        <label class="slot-picker">
+          Slot
+          <select id="slotSelect">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </label>
+        <button id="saveBtn" class="primary">Save</button>
+        <button id="loadBtn">Load</button>
+        <button id="shareBtn">Share to Room</button>
+        <button id="loadRoomBtn">Load Room</button>
+        <button id="exportBtn">Export</button>
+        <button id="importBtn">Import</button>
         <input id="importFile" type="file" accept="application/json" hidden>
       </div>
     </header>
 
     <nav class="tabs">
-      <button class="tab active" data-tab="sheetTab">Sheet</button>
+      <button class="tab active" data-tab="mainTab">Main</button>
+      <button class="tab" data-tab="gearTab">Gear</button>
       <button class="tab" data-tab="spellsTab">Spells</button>
-      <button class="tab" data-tab="partyTab">Party Records</button>
-      <button class="tab" data-tab="optionsTab">Options</button>
+      <button class="tab" data-tab="talentsTab">Talents</button>
+      <button class="tab" data-tab="partyTab">Party</button>
     </nav>
 
     <main>
-      <section id="sheetTab" class="panel active">
-        <div class="sheet-grid">
-          <section class="card span-2">
-            <div class="card-title-row">
-              <h2>Character</h2>
-              <div class="slot-picker">
-                <label>Save Slot
-                  <select id="slotSelect">
-                    <option value="1">Slot 1</option>
-                    <option value="2">Slot 2</option>
-                    <option value="3">Slot 3</option>
-                    <option value="4">Slot 4</option>
-                    <option value="5">Slot 5</option>
-                  </select>
-                </label>
-              </div>
-            </div>
-            <div class="header-grid">
+      <section id="mainTab" class="panel active">
+        <div class="main-grid">
+          <section class="card span-2 hero-card">
+            <div class="hero-grid">
               <label>Name<input id="name"></label>
               <label>Class<input id="charClass"></label>
               <label>Race<input id="race"></label>
@@ -63,24 +60,24 @@
 
           <section class="card">
             <div class="card-title-row">
-              <h2>Attributes</h2>
-              <span class="muted">Prime + modifier display</span>
+              <h2>Stats</h2>
+              <span class="muted">Prime + modifiers</span>
             </div>
-            <div id="attributes" class="attributes"></div>
+            <div id="attributes" class="stats-grid"></div>
           </section>
 
           <section class="card">
             <div class="card-title-row">
               <h2>Combat</h2>
-              <span class="muted">Quick reference</span>
+              <span class="muted">Quick actions</span>
             </div>
             <div class="combat-grid">
               <label>HP<input id="hp" type="number" value="0"></label>
               <label>Max HP<input id="maxHp" type="number" value="0"></label>
               <label>AC<input id="ac" type="number" value="10"></label>
               <label>BTH<input id="bth" type="number" value="0"></label>
-              <label>Initiative Bonus<input id="initBonus" type="number" value="0"></label>
-              <label>Movement<input id="move" value="30 ft."></label>
+              <label>Init Bonus<input id="initBonus" type="number" value="0"></label>
+              <label>Move<input id="move" value="30 ft."></label>
             </div>
             <div class="dice-bar">
               <button id="attackBtn">Attack</button>
@@ -94,30 +91,43 @@
             <div id="diceLog" class="log"></div>
           </section>
 
-          <section class="card">
-            <h2>Class Abilities / Features</h2>
-            <textarea id="abilities" rows="10"></textarea>
+          <section class="card span-2">
+            <div class="card-title-row">
+              <h2>Reference</h2>
+              <span class="muted">Information only</span>
+            </div>
+            <label>Notes<textarea id="notes" rows="8"></textarea></label>
           </section>
+        </div>
+      </section>
 
+      <section id="gearTab" class="panel">
+        <div class="main-grid">
           <section class="card">
+            <h2>Weapons</h2>
+            <textarea id="weapons" rows="12"></textarea>
+          </section>
+          <section class="card">
+            <h2>Armor & Shields</h2>
+            <textarea id="armor" rows="12"></textarea>
+          </section>
+          <section class="card span-2">
             <h2>Equipment</h2>
-            <textarea id="equipment" rows="10"></textarea>
+            <textarea id="equipment" rows="12"></textarea>
           </section>
-
           <section class="card">
             <h2>Treasure / Coins</h2>
-            <textarea id="treasure" rows="6"></textarea>
+            <textarea id="treasure" rows="10"></textarea>
           </section>
-
           <section class="card">
-            <h2>Notes</h2>
-            <textarea id="notes" rows="6"></textarea>
+            <h2>Languages / Misc.</h2>
+            <textarea id="languages" rows="10"></textarea>
           </section>
         </div>
       </section>
 
       <section id="spellsTab" class="panel">
-        <div class="sheet-grid">
+        <div class="main-grid">
           <section class="card span-2">
             <div class="card-title-row">
               <h2>Spell Slots</h2>
@@ -126,8 +136,25 @@
             <div id="spellSlots" class="spell-slots"></div>
           </section>
           <section class="card span-2">
-            <h2>Spell Notes</h2>
+            <h2>Spellbook / Prepared</h2>
             <textarea id="spellNotes" rows="12"></textarea>
+          </section>
+        </div>
+      </section>
+
+      <section id="talentsTab" class="panel">
+        <div class="main-grid">
+          <section class="card span-2">
+            <h2>Class Abilities / Racial Abilities</h2>
+            <textarea id="abilities" rows="14"></textarea>
+          </section>
+          <section class="card">
+            <h2>Special Training / Feats / Proficiencies</h2>
+            <textarea id="training" rows="10"></textarea>
+          </section>
+          <section class="card">
+            <h2>Followers / Companions</h2>
+            <textarea id="companions" rows="10"></textarea>
           </section>
         </div>
       </section>
@@ -135,23 +162,10 @@
       <section id="partyTab" class="panel">
         <div class="card">
           <div class="card-title-row">
-            <h2>Room Character Records</h2>
-            <span class="muted">Shared record snapshots</span>
+            <h2>Shared Party Records</h2>
+            <span class="muted">GM and players can review saved records</span>
           </div>
           <div id="partyList" class="party-list"></div>
-        </div>
-      </section>
-
-      <section id="optionsTab" class="panel">
-        <div class="card">
-          <h2>Options</h2>
-          <div class="options-grid">
-            <label class="checkrow"><input type="checkbox" id="autoSave" checked> Auto-save active slot locally</label>
-            <label class="checkrow"><input type="checkbox" id="showMods" checked> Show attribute modifiers</label>
-          </div>
-          <p class="muted option-note">
-            This extension is for Castles & Crusades and uses manual entry for official content. It is intended as a character record and reference sheet.
-          </p>
         </div>
       </section>
     </main>
