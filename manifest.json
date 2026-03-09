@@ -1,0 +1,13 @@
+{
+  "name": "Castles & Crusades Character Sheet",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "description": "Castles & Crusades character sheet for Owlbear Rodeo.",
+  "action": {
+    "title": "C&C Sheet",
+    "icon": "./assets/icon.png",
+    "popover": "./",
+    "height": 820,
+    "width": 1220
+  }
+}

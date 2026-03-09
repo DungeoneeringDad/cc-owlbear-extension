@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>C&C Character Sheet</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>Castles & Crusades Character Sheet</h1>
+        <p class="subtitle">A C&C sheet inspired by the multi-tab Shadowdark-style Owlbear layout.</p>
+      </div>
+      <div class="topbar-actions">
+        <button id="saveSlotBtn" class="primary">Save Slot</button>
+        <button id="loadSlotBtn">Load Slot</button>
+        <button id="shareRoomBtn">Share to Room</button>
+        <button id="loadRoomBtn">Load Room Records</button>
+        <button id="exportBtn">Export JSON</button>
+        <button id="importBtn">Import JSON</button>
+        <input id="importFile" type="file" accept="application/json" hidden>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="sheetTab">Sheet</button>
+      <button class="tab" data-tab="spellsTab">Spells</button>
+      <button class="tab" data-tab="partyTab">Party Records</button>
+      <button class="tab" data-tab="optionsTab">Options</button>
+    </nav>
+
+    <main>
+      <section id="sheetTab" class="panel active">
+        <div class="sheet-grid">
+          <section class="card span-2">
+            <div class="card-title-row">
+              <h2>Character</h2>
+              <div class="slot-picker">
+                <label>Save Slot
+                  <select id="slotSelect">
+                    <option value="1">Slot 1</option>
+                    <option value="2">Slot 2</option>
+                    <option value="3">Slot 3</option>
+                    <option value="4">Slot 4</option>
+                    <option value="5">Slot 5</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <div class="header-grid">
+              <label>Name<input id="name"></label>
+              <label>Class<input id="charClass"></label>
+              <label>Race<input id="race"></label>
+              <label>Level<input id="level" type="number" min="1" value="1"></label>
+              <label>Alignment<input id="alignment"></label>
+              <label>Player<input id="player"></label>
+              <label>Deity<input id="deity"></label>
+              <label>XP<input id="xp" type="number" value="0"></label>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-title-row">
+              <h2>Attributes</h2>
+              <span class="muted">Prime + modifier display</span>
+            </div>
+            <div id="attributes" class="attributes"></div>
+          </section>
+
+          <section class="card">
+            <div class="card-title-row">
+              <h2>Combat</h2>
+              <span class="muted">Quick reference</span>
+            </div>
+            <div class="combat-grid">
+              <label>HP<input id="hp" type="number" value="0"></label>
+              <label>Max HP<input id="maxHp" type="number" value="0"></label>
+              <label>AC<input id="ac" type="number" value="10"></label>
+              <label>BTH<input id="bth" type="number" value="0"></label>
+              <label>Initiative Bonus<input id="initBonus" type="number" value="0"></label>
+              <label>Movement<input id="move" value="30 ft."></label>
+            </div>
+            <div class="dice-bar">
+              <button id="attackBtn">Attack</button>
+              <button id="initiativeBtn">Initiative</button>
+              <button data-dmg="d4">d4</button>
+              <button data-dmg="d6">d6</button>
+              <button data-dmg="d8">d8</button>
+              <button data-dmg="d10">d10</button>
+              <button data-dmg="d12">d12</button>
+            </div>
+            <div id="diceLog" class="log"></div>
+          </section>
+
+          <section class="card">
+            <h2>Class Abilities / Features</h2>
+            <textarea id="abilities" rows="10"></textarea>
+          </section>
+
+          <section class="card">
+            <h2>Equipment</h2>
+            <textarea id="equipment" rows="10"></textarea>
+          </section>
+
+          <section class="card">
+            <h2>Treasure / Coins</h2>
+            <textarea id="treasure" rows="6"></textarea>
+          </section>
+
+          <section class="card">
+            <h2>Notes</h2>
+            <textarea id="notes" rows="6"></textarea>
+          </section>
+        </div>
+      </section>
+
+      <section id="spellsTab" class="panel">
+        <div class="sheet-grid">
+          <section class="card span-2">
+            <div class="card-title-row">
+              <h2>Spell Slots</h2>
+              <span class="muted">Manual tracking</span>
+            </div>
+            <div id="spellSlots" class="spell-slots"></div>
+          </section>
+          <section class="card span-2">
+            <h2>Spell Notes</h2>
+            <textarea id="spellNotes" rows="12"></textarea>
+          </section>
+        </div>
+      </section>
+
+      <section id="partyTab" class="panel">
+        <div class="card">
+          <div class="card-title-row">
+            <h2>Room Character Records</h2>
+            <span class="muted">Shared record snapshots</span>
+          </div>
+          <div id="partyList" class="party-list"></div>
+        </div>
+      </section>
+
+      <section id="optionsTab" class="panel">
+        <div class="card">
+          <h2>Options</h2>
+          <div class="options-grid">
+            <label class="checkrow"><input type="checkbox" id="autoSave" checked> Auto-save active slot locally</label>
+            <label class="checkrow"><input type="checkbox" id="showMods" checked> Show attribute modifiers</label>
+          </div>
+          <p class="muted option-note">
+            This extension is for Castles & Crusades and uses manual entry for official content. It is intended as a character record and reference sheet.
+          </p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
