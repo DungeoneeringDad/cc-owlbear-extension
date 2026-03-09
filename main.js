@@ -1,8 +1,8 @@
 import OBR from "https://unpkg.com/@owlbear-rodeo/sdk@latest/dist/index.mjs";
 
-const EXT_ID = "io.dungeoneeringdad.cc-shadowdark-style";
+const EXT_ID = "io.dungeoneeringdad.cc-official-style";
 const ROOM_KEY = `${EXT_ID}/partyRecords`;
-const SLOT_PREFIX = `${EXT_ID}/slot/`;
+const LOCAL_KEY = `${EXT_ID}/activeCharacter`;
 const ATTRS = ["str","dex","con","int","wis","cha"];
 const LABELS = {str:"STR", dex:"DEX", con:"CON", int:"INT", wis:"WIS", cha:"CHA"};
 const logEntries = [];
@@ -14,7 +14,7 @@ OBR.onReady(async () => {
   buildAttributes();
   buildSpellSlots();
   bindEvents();
-  await loadSlot();
+  await loadLocal();
   await loadRoomRecords();
 });
 
@@ -32,7 +32,10 @@ function initTabs() {
 function bindEvents() {
   document.addEventListener("input", (e) => {
     if (e.target?.id && ATTRS.includes(e.target.id)) updateModifier(e.target.id);
+    saveLocal();
   });
+
+  document.addEventListener("change", () => saveLocal());
 
   document.addEventListener("click", (e) => {
     const attr = e.target?.dataset?.siege;
@@ -43,8 +46,6 @@ function bindEvents() {
 
   document.getElementById("attackBtn").addEventListener("click", doAttack);
   document.getElementById("initiativeBtn").addEventListener("click", doInitiative);
-  document.getElementById("saveBtn").addEventListener("click", saveSlot);
-  document.getElementById("loadBtn").addEventListener("click", loadSlot);
   document.getElementById("shareBtn").addEventListener("click", shareToRoom);
   document.getElementById("loadRoomBtn").addEventListener("click", loadRoomRecords);
   document.getElementById("exportBtn").addEventListener("click", exportJson);
@@ -57,9 +58,9 @@ function buildAttributes() {
   root.innerHTML = "";
   ATTRS.forEach(attr => {
     const card = document.createElement("div");
-    card.className = "stat-card";
+    card.className = "attr-card";
     card.innerHTML = `
-      <div class="stat-head">
+      <div class="attr-head">
         <strong>${LABELS[attr]}</strong>
         <span class="mod" id="${attr}Mod">+0</span>
       </div>
@@ -89,7 +90,7 @@ function buildSpellSlots() {
       slot.dataset.index = String(i);
       wrap.appendChild(slot);
     }
-    box.innerHTML = `<strong>Level ${level}</strong>`;
+    box.innerHTML = `<strong>Spell Level ${level}</strong>`;
     box.appendChild(wrap);
     root.appendChild(box);
   }
@@ -153,14 +154,6 @@ function doSiege(attr) {
   addLog(`${LABELS[attr]} Siege`, `d20 ${roll} + mod ${mod} = ${total} vs ${target}`);
 }
 
-function selectedSlot() {
-  return document.getElementById("slotSelect").value;
-}
-
-function slotKey() {
-  return `${SLOT_PREFIX}${selectedSlot()}`;
-}
-
 function collectData() {
   const data = {
     name: val("name"),
@@ -175,21 +168,24 @@ function collectData() {
     maxHp: val("maxHp"),
     ac: val("ac"),
     bth: val("bth"),
-    initBonus: val("initBonus"),
     move: val("move"),
+    initBonus: val("initBonus"),
+    languages: val("languages"),
+    siegeNotes: val("siegeNotes"),
     notes: val("notes"),
     weapons: val("weapons"),
     armor: val("armor"),
     equipment: val("equipment"),
     treasure: val("treasure"),
-    languages: val("languages"),
+    travel: val("travel"),
     spellNotes: val("spellNotes"),
-    abilities: val("abilities"),
-    training: val("training"),
+    classAbilities: val("classAbilities"),
+    racialAbilities: val("racialAbilities"),
     companions: val("companions"),
     attrs: {},
     spellSlots: {}
   };
+
   ATTRS.forEach(attr => {
     data.attrs[attr] = {
       score: val(attr),
@@ -197,15 +193,17 @@ function collectData() {
       prime: document.getElementById(attr + "Prime").checked
     };
   });
+
   document.querySelectorAll(".slot").forEach(slot => {
     data.spellSlots[`${slot.dataset.level}:${slot.dataset.index}`] = slot.checked;
   });
+
   return data;
 }
 
 function applyData(data) {
   if (!data) return;
-  ["name","charClass","race","level","alignment","player","deity","xp","hp","maxHp","ac","bth","initBonus","move","notes","weapons","armor","equipment","treasure","languages","spellNotes","abilities","training","companions"]
+  ["name","charClass","race","level","alignment","player","deity","xp","hp","maxHp","ac","bth","move","initBonus","languages","siegeNotes","notes","weapons","armor","equipment","treasure","travel","spellNotes","classAbilities","racialAbilities","companions"]
     .forEach(id => setVal(id, data[id]));
   ATTRS.forEach(attr => {
     const v = data.attrs?.[attr] || {};
@@ -219,16 +217,14 @@ function applyData(data) {
   });
 }
 
-async function saveSlot() {
-  localStorage.setItem(slotKey(), JSON.stringify(collectData()));
-  addLog("Save", `Saved slot ${selectedSlot()}`);
+function saveLocal() {
+  localStorage.setItem(LOCAL_KEY, JSON.stringify(collectData()));
 }
 
-async function loadSlot() {
-  const raw = localStorage.getItem(slotKey());
+async function loadLocal() {
+  const raw = localStorage.getItem(LOCAL_KEY);
   if (!raw) return;
   applyData(JSON.parse(raw));
-  addLog("Load", `Loaded slot ${selectedSlot()}`);
 }
 
 async function shareToRoom() {
@@ -258,7 +254,7 @@ async function loadRoomRecords() {
 function renderParty(records) {
   const root = document.getElementById("partyList");
   if (!records.length) {
-    root.innerHTML = `<div class="party-card"><h3>No shared records yet</h3><div class="party-meta">Use Share to Room from a character sheet.</div></div>`;
+    root.innerHTML = `<div class="party-card"><h3>No shared records yet</h3><div class="party-meta">Use Share to Room from the active record sheet.</div></div>`;
     return;
   }
   root.innerHTML = records.map((record, idx) => `
@@ -266,7 +262,7 @@ function renderParty(records) {
       <h3>${escapeHtml(record.name || "Unnamed")}</h3>
       <div class="party-meta">${escapeHtml(record.charClass || "")} • ${escapeHtml(record.race || "")} • Level ${escapeHtml(record.level || "")}</div>
       <div>HP ${escapeHtml(record.hp || "0")}/${escapeHtml(record.maxHp || "0")} • AC ${escapeHtml(record.ac || "10")} • BTH ${escapeHtml(record.bth || "0")}</div>
-      <div style="margin-top:10px"><button data-party-index="${idx}">Load to Sheet</button></div>
+      <div style="margin-top:10px"><button data-party-index="${idx}">Load to Record</button></div>
     </div>
   `).join("");
   root.querySelectorAll("[data-party-index]").forEach(btn => {
@@ -275,6 +271,7 @@ function renderParty(records) {
       const data = Array.isArray(meta?.[ROOM_KEY]) ? meta[ROOM_KEY][Number(btn.dataset.partyIndex)] : null;
       if (data) {
         applyData(data);
+        saveLocal();
         addLog("Room Record", `Loaded ${data.name || "record"} to sheet.`);
       }
     });
@@ -286,7 +283,7 @@ function exportJson() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "cc-character-sheet.json";
+  a.download = "cc-record-sheet.json";
   a.click();
   URL.revokeObjectURL(url);
   addLog("Export", "Exported character JSON.");
@@ -296,6 +293,7 @@ async function importJson(event) {
   const file = event.target.files?.[0];
   if (!file) return;
   applyData(JSON.parse(await file.text()));
+  saveLocal();
   addLog("Import", `Imported ${file.name}`);
   event.target.value = "";
 }

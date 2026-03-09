@@ -1,13 +1,13 @@
 {
-  "name": "Castles & Crusades Sheet",
-  "version": "1.1.0",
+  "name": "Castles & Crusades Record Sheet",
+  "version": "1.3.0",
   "manifest_version": 1,
-  "description": "Castles & Crusades sheet with a Shadowdark-style tabbed layout for Owlbear Rodeo.",
+  "description": "Castles & Crusades character and party record sheet for Owlbear Rodeo.",
   "action": {
-    "title": "C&C Sheet",
+    "title": "C&C Record",
     "icon": "./assets/icon.png",
     "popover": "./",
-    "height": 860,
-    "width": 1280
+    "height": 900,
+    "width": 1320
   }
 }

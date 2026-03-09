@@ -3,31 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>C&C Sheet</title>
+  <title>Castles & Crusades Record Sheet</title>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
+  <div class="page">
+    <header class="masthead">
       <div>
-        <h1>Castles & Crusades</h1>
-        <p class="subtitle">Shadowdark-style tabbed character sheet layout for Owlbear Rodeo</p>
+        <div class="game-line">TROLL LORD GAMES STYLE RECORD LAYOUT</div>
+        <h1>Castles & Crusades Record Sheet</h1>
+        <p class="subline">Reference sheet for players and Castle Keeper in Owlbear Rodeo</p>
       </div>
-      <div class="toolbar">
-        <label class="slot-picker">
-          Slot
-          <select id="slotSelect">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-          </select>
-        </label>
-        <button id="saveBtn" class="primary">Save</button>
-        <button id="loadBtn">Load</button>
-        <button id="shareBtn">Share to Room</button>
-        <button id="loadRoomBtn">Load Room</button>
+      <div class="controls">
+        <button id="shareBtn" class="primary">Share to Room</button>
+        <button id="loadRoomBtn">Refresh Party</button>
         <button id="exportBtn">Export</button>
         <button id="importBtn">Import</button>
         <input id="importFile" type="file" accept="application/json" hidden>
@@ -35,51 +24,45 @@
     </header>
 
     <nav class="tabs">
-      <button class="tab active" data-tab="mainTab">Main</button>
-      <button class="tab" data-tab="gearTab">Gear</button>
-      <button class="tab" data-tab="spellsTab">Spells</button>
-      <button class="tab" data-tab="talentsTab">Talents</button>
+      <button class="tab active" data-tab="recordTab">Record</button>
+      <button class="tab" data-tab="equipmentTab">Equipment</button>
+      <button class="tab" data-tab="magicTab">Magic</button>
+      <button class="tab" data-tab="abilitiesTab">Abilities</button>
       <button class="tab" data-tab="partyTab">Party</button>
     </nav>
 
     <main>
-      <section id="mainTab" class="panel active">
-        <div class="main-grid">
-          <section class="card span-2 hero-card">
-            <div class="hero-grid">
-              <label>Name<input id="name"></label>
+      <section id="recordTab" class="panel active">
+        <div class="record-grid">
+          <section class="sheet-card span-2">
+            <div class="top-fields">
+              <label>Character Name<input id="name"></label>
+              <label>Player Name<input id="player"></label>
               <label>Class<input id="charClass"></label>
               <label>Race<input id="race"></label>
               <label>Level<input id="level" type="number" min="1" value="1"></label>
               <label>Alignment<input id="alignment"></label>
-              <label>Player<input id="player"></label>
-              <label>Deity<input id="deity"></label>
+              <label>Deity / Patron<input id="deity"></label>
               <label>XP<input id="xp" type="number" value="0"></label>
             </div>
           </section>
 
-          <section class="card">
-            <div class="card-title-row">
-              <h2>Stats</h2>
-              <span class="muted">Prime + modifiers</span>
-            </div>
-            <div id="attributes" class="stats-grid"></div>
+          <section class="sheet-card">
+            <div class="section-title">Attributes</div>
+            <div id="attributes" class="attribute-grid"></div>
           </section>
 
-          <section class="card">
-            <div class="card-title-row">
-              <h2>Combat</h2>
-              <span class="muted">Quick actions</span>
-            </div>
+          <section class="sheet-card">
+            <div class="section-title">Combat Statistics</div>
             <div class="combat-grid">
-              <label>HP<input id="hp" type="number" value="0"></label>
-              <label>Max HP<input id="maxHp" type="number" value="0"></label>
-              <label>AC<input id="ac" type="number" value="10"></label>
-              <label>BTH<input id="bth" type="number" value="0"></label>
-              <label>Init Bonus<input id="initBonus" type="number" value="0"></label>
-              <label>Move<input id="move" value="30 ft."></label>
+              <label>Current HP<input id="hp" type="number" value="0"></label>
+              <label>Maximum HP<input id="maxHp" type="number" value="0"></label>
+              <label>Armor Class<input id="ac" type="number" value="10"></label>
+              <label>Base to Hit<input id="bth" type="number" value="0"></label>
+              <label>Movement<input id="move" value="30 ft."></label>
+              <label>Initiative Bonus<input id="initBonus" type="number" value="0"></label>
             </div>
-            <div class="dice-bar">
+            <div class="dice-row">
               <button id="attackBtn">Attack</button>
               <button id="initiativeBtn">Initiative</button>
               <button data-dmg="d4">d4</button>
@@ -91,86 +74,82 @@
             <div id="diceLog" class="log"></div>
           </section>
 
-          <section class="card span-2">
-            <div class="card-title-row">
-              <h2>Reference</h2>
-              <span class="muted">Information only</span>
-            </div>
-            <label>Notes<textarea id="notes" rows="8"></textarea></label>
+          <section class="sheet-card">
+            <div class="section-title">Siege & Saving Notes</div>
+            <label>Languages<textarea id="languages" rows="4"></textarea></label>
+            <label>Siege / Save Notes<textarea id="siegeNotes" rows="6"></textarea></label>
+          </section>
+
+          <section class="sheet-card">
+            <div class="section-title">Character Notes</div>
+            <label>Background, contacts, goals, campaign notes<textarea id="notes" rows="12"></textarea></label>
           </section>
         </div>
       </section>
 
-      <section id="gearTab" class="panel">
-        <div class="main-grid">
-          <section class="card">
-            <h2>Weapons</h2>
+      <section id="equipmentTab" class="panel">
+        <div class="record-grid">
+          <section class="sheet-card">
+            <div class="section-title">Weapons</div>
             <textarea id="weapons" rows="12"></textarea>
           </section>
-          <section class="card">
-            <h2>Armor & Shields</h2>
+          <section class="sheet-card">
+            <div class="section-title">Armor & Shields</div>
             <textarea id="armor" rows="12"></textarea>
           </section>
-          <section class="card span-2">
-            <h2>Equipment</h2>
+          <section class="sheet-card span-2">
+            <div class="section-title">General Equipment</div>
             <textarea id="equipment" rows="12"></textarea>
           </section>
-          <section class="card">
-            <h2>Treasure / Coins</h2>
+          <section class="sheet-card">
+            <div class="section-title">Treasure / Coins</div>
             <textarea id="treasure" rows="10"></textarea>
           </section>
-          <section class="card">
-            <h2>Languages / Misc.</h2>
-            <textarea id="languages" rows="10"></textarea>
+          <section class="sheet-card">
+            <div class="section-title">Encumbrance / Travel / Mounts</div>
+            <textarea id="travel" rows="10"></textarea>
           </section>
         </div>
       </section>
 
-      <section id="spellsTab" class="panel">
-        <div class="main-grid">
-          <section class="card span-2">
-            <div class="card-title-row">
-              <h2>Spell Slots</h2>
-              <span class="muted">Manual tracking</span>
-            </div>
-            <div id="spellSlots" class="spell-slots"></div>
+      <section id="magicTab" class="panel">
+        <div class="record-grid">
+          <section class="sheet-card span-2">
+            <div class="section-title">Spell Slots</div>
+            <div id="spellSlots" class="spell-grid"></div>
           </section>
-          <section class="card span-2">
-            <h2>Spellbook / Prepared</h2>
+          <section class="sheet-card span-2">
+            <div class="section-title">Prepared / Known Spells</div>
             <textarea id="spellNotes" rows="12"></textarea>
           </section>
         </div>
       </section>
 
-      <section id="talentsTab" class="panel">
-        <div class="main-grid">
-          <section class="card span-2">
-            <h2>Class Abilities / Racial Abilities</h2>
-            <textarea id="abilities" rows="14"></textarea>
+      <section id="abilitiesTab" class="panel">
+        <div class="record-grid">
+          <section class="sheet-card span-2">
+            <div class="section-title">Class Abilities</div>
+            <textarea id="classAbilities" rows="10"></textarea>
           </section>
-          <section class="card">
-            <h2>Special Training / Feats / Proficiencies</h2>
-            <textarea id="training" rows="10"></textarea>
+          <section class="sheet-card">
+            <div class="section-title">Racial Abilities</div>
+            <textarea id="racialAbilities" rows="10"></textarea>
           </section>
-          <section class="card">
-            <h2>Followers / Companions</h2>
+          <section class="sheet-card">
+            <div class="section-title">Companions / Followers / Henchmen</div>
             <textarea id="companions" rows="10"></textarea>
           </section>
         </div>
       </section>
 
       <section id="partyTab" class="panel">
-        <div class="card">
-          <div class="card-title-row">
-            <h2>Shared Party Records</h2>
-            <span class="muted">GM and players can review saved records</span>
-          </div>
+        <div class="sheet-card">
+          <div class="section-title">Shared Party Records</div>
           <div id="partyList" class="party-list"></div>
         </div>
       </section>
     </main>
   </div>
-
   <script type="module" src="./main.js"></script>
 </body>
 </html>
